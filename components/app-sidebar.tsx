@@ -22,18 +22,20 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton size="lg" asChild>
-              <div className="flex items-center justify-between w-full">
-                <div className="flex flex-col">
-                  <span className="text-xs text-muted-foreground">
-                    Welcome back
-                  </span>
-                  <span className="text-sm font-semibold">
-                    {user?.firstName} {user?.lastName}
-                  </span>
-                </div>
-                <UserButton signInUrl="/sign-in" />
+            <SidebarMenuButton
+              size="lg"
+              render={<div />}
+              className="flex items-center justify-between w-full"
+            >
+              <div className="flex flex-col">
+                <span className="text-xs text-muted-foreground">
+                  Welcome back
+                </span>
+                <span className="text-sm font-semibold">
+                  {user?.firstName} {user?.lastName}
+                </span>
               </div>
+              <UserButton signInUrl="/sign-in" />
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
