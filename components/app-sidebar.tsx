@@ -14,8 +14,21 @@ import {
 
 import { UserButton, useUser } from "@clerk/nextjs";
 import { Button } from "./ui/button";
+import { ChannelFilters, ChannelSort } from "stream-chat";
+import { ChannelList } from "stream-chat-react";
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { user } = useUser();
+
+  const filters: ChannelFilters = {
+    members: { $in: [user?.id as string] },
+    type: { $in: ["messaging", "team"] }, // Show both 1-1 chats and group chats
+  };
+
+  const options = { presence: true, state: true };
+
+  const sort: ChannelSort = {
+    last_message_at: -1,
+  };
 
   return (
     <Sidebar variant="floating" {...props}>
@@ -48,6 +61,23 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             </Button>
 
             {/* Channels List */}
+            <ChannelList
+              sort={sort}
+              filters={filters}
+              options={options}
+              EmptyStateIndicator={() => (
+                <div className="flex flex-col items-center justify-center h-full py-12 px-4">
+                  <div className="text-6xl mb-6 opacity-20">💬</div>
+                  <h2 className="text-xl font-medium text-foreground mb-2">
+                    Ready to chat?
+                  </h2>
+                  <p className="text-sm text-muted-foreground text-center leading-relaxed max-w-[200px]">
+                    Your conversations will appear here once you start chatting
+                    with others.
+                  </p>
+                </div>
+              )}
+            />
           </SidebarMenu>
         </SidebarGroup>
       </SidebarContent>
