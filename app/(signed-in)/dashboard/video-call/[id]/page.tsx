@@ -72,7 +72,7 @@ function VideoCall() {
     );
   }
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col h-full bg-black">
       <div className="flex-1 relative">
         <SpeakerLayout />
       </div>
