@@ -25,8 +25,34 @@ function Dashboard() {
     console.log("Calling...");
   };
 
-  const handleLeaveChat = () => {
-    console.log("Leaving Chat...");
+  const handleLeaveChat = async () => {
+    if (!channel || !user?.id) {
+      console.log("No active channel or user");
+      return;
+    }
+
+    // Confirm before leaving
+    const confirm = window.confirm("Are you sure you want to leave the chat?");
+    if (!confirm) return;
+
+    try {
+      // Send a notification message before leaving
+      await channel.sendMessage({
+        text: `${user.fullName || user.username || "A user"} has left the group.`,
+      });
+
+      // Remove current user from the channel
+      await channel.removeMembers([user.id]);
+
+      // Clear the active channel
+      setActiveChannel(undefined);
+
+      // Redirect to dashboard after leaving
+      router.push("/dashboard");
+    } catch (error) {
+      console.error("Error leaving chat:", error);
+      // You could add a toast notification here for better UX
+    }
   };
 
   return (

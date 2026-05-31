@@ -1,4 +1,4 @@
-import { Webhook } from "svix";
+import { Webhook } from "svix/dist/webhook";
 import { headers } from "next/headers";
 import { WebhookEvent } from "@clerk/nextjs/server";
 import { fetchMutation } from "convex/nextjs";
