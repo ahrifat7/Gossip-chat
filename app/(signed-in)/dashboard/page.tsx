@@ -22,7 +22,9 @@ function Dashboard() {
   const { setOpen } = useSidebar();
 
   const handleCall = () => {
-    console.log("Calling...");
+    if (!channel) return;
+    router.push(`/dashboard/video-call/${channel.id}`);
+    setOpen(false);
   };
 
   const handleLeaveChat = async () => {
@@ -83,10 +85,10 @@ function Dashboard() {
             </div>
             <MessageList />
             <div className="sticky bottom-0 w-full">
-              <MessageInput />
+              <MessageInput audioRecordingEnabled={true} />
             </div>
           </Window>
-          <Thread />
+          <Thread additionalMessageInputProps={{ audioRecordingEnabled: true }} />
         </Channel>
       ) : (
         <div className="flex flex-col items-center justify-center h-full">

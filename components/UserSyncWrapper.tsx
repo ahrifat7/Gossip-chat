@@ -84,8 +84,8 @@ function UserSyncWrapper({ children }: { children: React.ReactNode }) {
       try {
         if (user) {
           if (!connectionRef.current) {
-             connectionRef.current = true;
-             await syncUser();
+            connectionRef.current = true;
+            await syncUser();
           }
         } else {
           await disconnectUser();
