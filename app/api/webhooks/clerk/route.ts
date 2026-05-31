@@ -61,8 +61,8 @@ export async function POST(req: Request) {
         // We use 'soft' deletion so their old messages are preserved, 
         // but their user is marked deleted. If hard_delete is true, it wipes them out entirely.
         await serverClient.deleteUser(id, {
-          user: "hard", // "hard" deletes user, removes them from channels
-          messages: "hard", // "hard" deletes all their messages
+          hard_delete: true,
+          mark_messages_deleted: true,
         });
 
         // 2. Mark user as deleted in Convex DB
