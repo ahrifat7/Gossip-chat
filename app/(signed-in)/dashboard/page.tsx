@@ -30,7 +30,7 @@ function Dashboard() {
   };
 
   return (
-    <div className="flex flex-col w-full flex-1">
+    <div className="flex flex-col w-full flex-1 h-full overflow-hidden">
       {channel ? (
         <Channel>
           <Window>
@@ -54,10 +54,10 @@ function Dashboard() {
                   Leave Chat
                 </Button>
               </div>
-              <MessageList />
-              <div className="sticky bottom-0 w-full">
-                <MessageInput />
-              </div>
+            </div>
+            <MessageList />
+            <div className="sticky bottom-0 w-full">
+              <MessageInput />
             </div>
           </Window>
           <Thread />

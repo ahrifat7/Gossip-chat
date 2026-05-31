@@ -56,9 +56,25 @@ export const searchUsers = query({
     return allUsers
       .filter(
         (user) =>
-          user.name.toLowerCase().includes(normalizedSearch) ||
-          user.email.toLowerCase().includes(normalizedSearch)
+          !user.isDeleted &&
+          (user.name.toLowerCase().includes(normalizedSearch) ||
+            user.email.toLowerCase().includes(normalizedSearch))
       )
       .slice(0, 20); // Limit to 20 results for performance
+  },
+});
+
+// Mark user as deleted
+export const markUserDeleted = mutation({
+  args: { userId: v.string() },
+  handler: async (ctx, { userId }) => {
+    const existingUser = await ctx.db
+      .query("users")
+      .withIndex("by_userId", (q) => q.eq("userId", userId))
+      .first();
+
+    if (existingUser) {
+      await ctx.db.patch(existingUser._id, { isDeleted: true });
+    }
   },
 });

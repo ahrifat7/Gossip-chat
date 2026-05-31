@@ -8,6 +8,7 @@ export default defineSchema({
     name: v.string(),
     email: v.string(),
     imageUrl: v.string(),
+    isDeleted: v.optional(v.boolean()),
   })
     .index("by_userId", ["userId"])
     .index("by_email", ["email"]),

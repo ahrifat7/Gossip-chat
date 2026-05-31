@@ -3,7 +3,7 @@
 import { api } from "@/convex/_generated/api";
 import { useUser } from "@clerk/nextjs";
 import { useMutation } from "convex/react";
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { LoadingSpinner } from "./LoadingSpinner";
 import streamClient from "@/lib/stream";
 import { createToken } from "@/actions/createToken";
@@ -74,16 +74,23 @@ function UserSyncWrapper({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  const connectionRef = useRef<boolean>(false);
+
   useEffect(() => {
     if (!isUserLoaded) return;
+    let isMounted = true;
 
     const initializeUser = async () => {
       try {
         if (user) {
-          await syncUser();
+          if (!connectionRef.current) {
+             connectionRef.current = true;
+             await syncUser();
+          }
         } else {
           await disconnectUser();
-          setIsLoading(false);
+          connectionRef.current = false;
+          if (isMounted) setIsLoading(false);
         }
       } catch (err) {
         console.error("Failed to initialize user:", err);
@@ -93,9 +100,9 @@ function UserSyncWrapper({ children }: { children: React.ReactNode }) {
     initializeUser();
 
     return () => {
-      if (user) {
-        disconnectUser();
-      }
+      isMounted = false;
+      // In React 18 strict mode, don't disconnect on unmount unless user logs out
+      // otherwise it kills the connection immediately after starting it.
     };
   }, [user, isUserLoaded, syncUser, disconnectUser]);
 

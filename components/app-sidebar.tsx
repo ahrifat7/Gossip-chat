@@ -15,7 +15,8 @@ import {
 import { UserButton, useUser } from "@clerk/nextjs";
 import { Button } from "./ui/button";
 import { ChannelFilters, ChannelSort } from "stream-chat";
-import { ChannelList } from "stream-chat-react";
+import { ChannelList, InfiniteScroll } from "stream-chat-react";
+import { NewChatDialog } from "./NewChatDialog";
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { user } = useUser();
 
@@ -56,12 +57,15 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarContent>
         <SidebarGroup>
           <SidebarMenu className="gap-2">
-            <Button className="w-full" variant="outline">
-              Start New Chat
-            </Button>
+            <NewChatDialog>
+              <Button className="w-full" variant="outline">
+                Start New Chat
+              </Button>
+            </NewChatDialog>
 
             {/* Channels List */}
             <ChannelList
+              Paginator={InfiniteScroll}
               sort={sort}
               filters={filters}
               options={options}
