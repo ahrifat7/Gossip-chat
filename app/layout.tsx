@@ -14,9 +14,21 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+import { Viewport } from "next";
+
+export const viewport: Viewport = {
+  themeColor: "#000000",
+};
+
 export const metadata: Metadata = {
-  title: "Gossip - Make it count",
+  title: "Gossip",
   description: "By SuperDev",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Gossip",
+  },
 };
 
 export default function RootLayout({

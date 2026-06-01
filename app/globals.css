@@ -127,3 +127,21 @@
     @apply font-sans;
   }
 }
+ /* Mobile Thread Overlay */
+@media (max-width: 768px) {
+  .str-chat__channel {
+    position: relative;
+  }
+  .str-chat__thread {
+    position: absolute !important;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100% !important;
+    height: 100% !important;
+    max-width: none !important;
+    z-index: 50 !important;
+    background-color: var(--str-chat__background-color, var(--background)) !important;
+  }
+}

@@ -2,9 +2,11 @@
 
 import { Button } from "@/components/ui/button";
 import { useSidebar } from "@/components/ui/sidebar";
+import { useCallContext } from "@/components/call/CallProvider";
 import { useUser } from "@clerk/nextjs";
-import { LogOutIcon, VideoIcon } from "lucide-react";
+import { LogOutIcon, VideoIcon, Loader2Icon } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import {
   Channel,
   useChatContext,
@@ -19,12 +21,30 @@ function Dashboard() {
   const { user } = useUser();
   const router = useRouter();
   const { channel, setActiveChannel } = useChatContext();
-  const { setOpen } = useSidebar();
+  const { startCall, callStatus } = useCallContext();
+  const [isStartingCall, setIsStartingCall] = useState(false);
 
-  const handleCall = () => {
-    if (!channel) return;
-    router.push(`/dashboard/video-call/${channel.id}`);
-    setOpen(false);
+  const handleCall = async () => {
+    if (!channel || !user?.id) return;
+
+    try {
+      setIsStartingCall(true);
+
+      // Get all member IDs from the channel (including current user)
+      const members = Object.values(channel.state.members || {});
+      const memberIds = members.map((m) => m.user_id).filter(Boolean) as string[];
+
+      if (memberIds.length < 2) {
+        console.warn("Need at least 2 members to start a call");
+        return;
+      }
+
+      await startCall(memberIds);
+    } catch (error) {
+      console.error("Failed to start call:", error);
+    } finally {
+      setIsStartingCall(false);
+    }
   };
 
   const handleLeaveChat = async () => {
@@ -57,6 +77,8 @@ function Dashboard() {
     }
   };
 
+  const isCallBusy = isStartingCall || callStatus !== "idle";
+
   return (
     <div className="flex flex-col w-full flex-1 h-full overflow-hidden">
       {channel ? (
@@ -69,17 +91,28 @@ function Dashboard() {
                 <ChannelHeader />
               )}
               <div className="flex items-center gap-2">
-                <Button variant="outline" onClick={handleCall}>
-                  <VideoIcon className="w-4 h-4" />
-                  Video Call
+                <Button
+                  variant="outline"
+                  onClick={handleCall}
+                  disabled={isCallBusy}
+                  className="gap-2 px-3 sm:px-4"
+                >
+                  {isStartingCall ? (
+                    <Loader2Icon className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <VideoIcon className="w-4 h-4" />
+                  )}
+                  <span className="hidden sm:inline">
+                    {isStartingCall ? "Starting..." : "Video Call"}
+                  </span>
                 </Button>
                 <Button
                   variant="outline"
                   onClick={handleLeaveChat}
-                  className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950"
+                  className="gap-2 px-3 sm:px-4 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950"
                 >
                   <LogOutIcon className="w-4 h-4" />
-                  Leave Chat
+                  <span className="hidden sm:inline">Leave Chat</span>
                 </Button>
               </div>
             </div>
@@ -105,3 +138,4 @@ function Dashboard() {
 }
 
 export default Dashboard;
+
