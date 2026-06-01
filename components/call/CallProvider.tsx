@@ -89,7 +89,7 @@ const IDLE_VALUE: CallContextValue = {
  */
 export function CallProvider({ children }: { children: React.ReactNode }) {
   // Try to get the client — returns null if outside <StreamVideo>
-  let client: StreamVideoClient | null = null;
+  let client: StreamVideoClient | null | undefined = null;
   try {
     // eslint-disable-next-line react-hooks/rules-of-hooks
     client = useStreamVideoClient();
