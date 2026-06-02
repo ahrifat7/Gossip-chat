@@ -3,6 +3,8 @@ import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Show, SignInButton, SignUpButton } from "@clerk/nextjs";
 import { PwaRedirect } from "@/components/PwaRedirect";
+import MobileDashboard from "@/components/MobileDashboard";
+import { useUser } from "@clerk/nextjs";
 import { MessageCircle, Users, Video, Shield, Zap, Mail } from "lucide-react";
 import Image from "next/image";
 import authImg from "./auth.png";
@@ -18,59 +20,66 @@ const GoogleIcon = () => (
 );
 
 export default function Home() {
+  const { isLoaded, isSignedIn } = useUser();
   return (
     <>
       <PwaRedirect />
       {/* Mobile UI */}
       <div className="pwa-mobile-only relative min-h-[100dvh] w-full bg-[#FCF8F5] overflow-hidden flex-col items-center justify-between pb-12 pt-12">
-        {/* Ambient background blobs */}
-        <div className="absolute top-[-5%] left-[-10%] w-[300px] h-[300px] bg-orange-300/40 rounded-full blur-[80px] -z-10"></div>
-        <div className="absolute top-[40%] right-[-20%] w-[250px] h-[250px] bg-red-200/40 rounded-full blur-[80px] -z-10"></div>
-        <div className="absolute bottom-[-10%] left-[-10%] w-[350px] h-[350px] bg-orange-400/30 rounded-full blur-[100px] -z-10"></div>
+        {isLoaded && isSignedIn ? (
+          <MobileDashboard />
+        ) : (
+          <>
+            {/* Ambient background blobs */}
+            <div className="absolute top-[-5%] left-[-10%] w-[300px] h-[300px] bg-orange-300/40 rounded-full blur-[80px] -z-10"></div>
+            <div className="absolute top-[40%] right-[-20%] w-[250px] h-[250px] bg-red-200/40 rounded-full blur-[80px] -z-10"></div>
+            <div className="absolute bottom-[-10%] left-[-10%] w-[350px] h-[350px] bg-orange-400/30 rounded-full blur-[100px] -z-10"></div>
 
-        {/* Header */}
-        <div className="flex flex-col items-center z-10">
-          <div className="w-16 h-16 relative shadow-sm mb-3 rounded-2xl overflow-hidden bg-[#e07530] flex items-center justify-center">
-            <Image src={iconImg} alt="Gossip Icon" width={64} height={64} className="object-cover" />
-          </div>
-          <h1 className="text-[22px] font-bold tracking-[0.2em] text-[#d65d13] font-serif uppercase">
-            Gossip
-          </h1>
-        </div>
+            {/* Header */}
+            <div className="flex flex-col items-center z-10">
+              <div className="w-16 h-16 relative shadow-sm mb-3 rounded-2xl overflow-hidden bg-[#e07530] flex items-center justify-center">
+                <Image src={iconImg} alt="Gossip Icon" width={64} height={64} className="object-cover" />
+              </div>
+              <h1 className="text-[22px] font-bold tracking-[0.2em] text-[#d65d13] font-serif uppercase">
+                Gossip
+              </h1>
+            </div>
 
-        {/* Illustration */}
-        <div className="w-full flex-1 flex items-center justify-center z-10 px-6 my-4">
-          <Image src={authImg} alt="Illustration" className="w-full max-w-[340px] object-contain drop-shadow-xl" priority />
-        </div>
+            {/* Illustration */}
+            <div className="w-full flex-1 flex items-center justify-center z-10 px-6 my-4">
+              <Image src={authImg} alt="Illustration" className="w-full max-w-[340px] object-contain drop-shadow-xl" priority />
+            </div>
 
-        {/* Bottom Section */}
-        <div className="flex flex-col items-center w-full px-8 z-10">
-          <h2 className="text-[34px] leading-tight font-extrabold text-[#111827] font-serif tracking-tight text-center">
-            Connect & Chat
-          </h2>
-          <h2 className="text-[28px] leading-tight font-bold text-[#D3601A] font-serif mt-1 tracking-tight text-center">
-            Seamlessly
-          </h2>
+            {/* Bottom Section */}
+            <div className="flex flex-col items-center w-full px-8 z-10">
+              <h2 className="text-[34px] leading-tight font-extrabold text-[#111827] font-serif tracking-tight text-center">
+                Connect & Chat
+              </h2>
+              <h2 className="text-[28px] leading-tight font-bold text-[#D3601A] font-serif mt-1 tracking-tight text-center">
+                Seamlessly
+              </h2>
 
-          <div className="flex w-full gap-4 mt-10">
-            <Show when="signed-out">
-              <SignInButton mode="modal">
-                <button className="flex-1 flex items-center justify-center gap-2 bg-white text-[#111827] text-[15px] font-bold py-4 rounded-2xl shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07)] border border-gray-50 hover:bg-gray-50 transition-colors">
-                  <GoogleIcon />
-                  Google
-                </button>
-              </SignInButton>
-            </Show>
-            <Show when="signed-out">
-              <SignInButton mode="modal">
-                <button className="flex-1 flex items-center justify-center gap-2 bg-[#2D2D2D] text-white text-[15px] font-bold py-4 rounded-2xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.2)] hover:bg-[#1a1a1a] transition-colors">
-                  <Mail className="w-[18px] h-[18px]" />
-                  Email
-                </button>
-              </SignInButton>
-            </Show>
-          </div>
-        </div>
+              <div className="flex w-full gap-4 mt-10">
+                <Show when="signed-out">
+                  <SignInButton mode="modal">
+                    <button className="flex-1 flex items-center justify-center gap-2 bg-white text-[#111827] text-[15px] font-bold py-4 rounded-2xl shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07)] border border-gray-50 hover:bg-gray-50 transition-colors">
+                      <GoogleIcon />
+                      Google
+                    </button>
+                  </SignInButton>
+                </Show>
+                <Show when="signed-out">
+                  <SignInButton mode="modal">
+                    <button className="flex-1 flex items-center justify-center gap-2 bg-[#2D2D2D] text-white text-[15px] font-bold py-4 rounded-2xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.2)] hover:bg-[#1a1a1a] transition-colors">
+                      <Mail className="w-[18px] h-[18px]" />
+                      Email
+                    </button>
+                  </SignInButton>
+                </Show>
+              </div>
+            </div>
+          </>
+        )}
       </div>
 
       {/* Desktop UI */}
