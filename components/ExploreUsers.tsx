@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import UserSearch from "@/components/UserSearch";
-import NewChatDialog from "@/components/NewChatDialog";
+import { NewChatDialog } from "@/components/NewChatDialog";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { useUser } from "@clerk/nextjs";
