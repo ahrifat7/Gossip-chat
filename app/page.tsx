@@ -20,7 +20,7 @@ export default function Home() {
   return (
     <>
       {/* Mobile UI */}
-      <div className="flex sm:hidden relative min-h-[100dvh] w-full bg-[#FCF8F5] overflow-hidden flex-col items-center justify-between pb-12 pt-12">
+      <div className="pwa-mobile-only relative min-h-[100dvh] w-full bg-[#FCF8F5] overflow-hidden flex-col items-center justify-between pb-12 pt-12">
         {/* Ambient background blobs */}
         <div className="absolute top-[-5%] left-[-10%] w-[300px] h-[300px] bg-orange-300/40 rounded-full blur-[80px] -z-10"></div>
         <div className="absolute top-[40%] right-[-20%] w-[250px] h-[250px] bg-red-200/40 rounded-full blur-[80px] -z-10"></div>
@@ -72,7 +72,7 @@ export default function Home() {
       </div>
 
       {/* Desktop UI */}
-      <div className="hidden sm:flex flex-col min-h-screen bg-background">
+      <div className="web-or-pc flex-col min-h-screen bg-background">
         <Header />
       <main className="flex-1 flex flex-col items-center px-4 py-16 sm:px-6 text-center gap-24 relative overflow-hidden">
         

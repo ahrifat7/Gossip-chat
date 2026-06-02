@@ -145,3 +145,22 @@
     background-color: var(--str-chat__background-color, var(--background)) !important;
   }
 }
+
+/* PWA conditional rendering */
+.pwa-mobile-only {
+  display: none !important;
+}
+.web-or-pc {
+  display: flex !important;
+}
+
+@media all and (display-mode: standalone) {
+  @media (max-width: 639px) {
+    .pwa-mobile-only {
+      display: flex !important;
+    }
+    .web-or-pc {
+      display: none !important;
+    }
+  }
+}
