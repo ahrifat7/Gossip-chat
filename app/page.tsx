@@ -1,10 +1,12 @@
+"use client";
+
 import FeatureCard from "@/components/FeatureCard";
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
-import { Show, SignInButton, SignUpButton } from "@clerk/nextjs";
+import { SignInButton, SignUpButton } from "@clerk/nextjs";
+import { Authenticated, Unauthenticated } from "convex/react";
 import { PwaRedirect } from "@/components/PwaRedirect";
 import MobileDashboard from "@/components/MobileDashboard";
-import { useUser } from "@clerk/nextjs";
 import { MessageCircle, Users, Video, Shield, Zap, Mail } from "lucide-react";
 import Image from "next/image";
 import authImg from "./auth.png";
@@ -20,15 +22,15 @@ const GoogleIcon = () => (
 );
 
 export default function Home() {
-  const { isLoaded, isSignedIn } = useUser();
   return (
     <>
       <PwaRedirect />
       {/* Mobile UI */}
       <div className="pwa-mobile-only relative min-h-[100dvh] w-full bg-[#FCF8F5] overflow-hidden flex-col items-center justify-between pb-12 pt-12">
-        {isLoaded && isSignedIn ? (
+        <Authenticated>
           <MobileDashboard />
-        ) : (
+        </Authenticated>
+        <Unauthenticated>
           <>
             {/* Ambient background blobs */}
             <div className="absolute top-[-5%] left-[-10%] w-[300px] h-[300px] bg-orange-300/40 rounded-full blur-[80px] -z-10"></div>
@@ -60,26 +62,26 @@ export default function Home() {
               </h2>
 
               <div className="flex w-full gap-4 mt-10">
-                <Show when="signed-out">
+                <Unauthenticated>
                   <SignInButton mode="modal">
                     <button className="flex-1 flex items-center justify-center gap-2 bg-white text-[#111827] text-[15px] font-bold py-4 rounded-2xl shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07)] border border-gray-50 hover:bg-gray-50 transition-colors">
                       <GoogleIcon />
                       Google
                     </button>
                   </SignInButton>
-                </Show>
-                <Show when="signed-out">
+                </Unauthenticated>
+                <Unauthenticated>
                   <SignInButton mode="modal">
                     <button className="flex-1 flex items-center justify-center gap-2 bg-[#2D2D2D] text-white text-[15px] font-bold py-4 rounded-2xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.2)] hover:bg-[#1a1a1a] transition-colors">
                       <Mail className="w-[18px] h-[18px]" />
                       Email
                     </button>
                   </SignInButton>
-                </Show>
+                </Unauthenticated>
               </div>
             </div>
           </>
-        )}
+        </Unauthenticated>
       </div>
 
       {/* Desktop UI */}
@@ -112,13 +114,13 @@ export default function Home() {
           </div>
 
           <div className="flex flex-col sm:flex-row justify-center items-center gap-4 animate-in fade-in slide-in-from-bottom-10 duration-1000 delay-150 fill-mode-both">
-            <Show when="signed-out">
+            <Unauthenticated>
               <SignInButton mode="modal">
                 <Button size="lg" className="text-lg px-8 py-7 h-auto rounded-full bg-primary hover:bg-primary/90 text-primary-foreground shadow-xl hover:shadow-primary/25 transition-all duration-300 hover:-translate-y-1">
                   Start Chatting Free
                 </Button>
               </SignInButton>
-            </Show>
+            </Unauthenticated>
           </div>
 
           {/* Social proof */}
@@ -210,13 +212,13 @@ export default function Home() {
             </p>
 
             <div className="flex flex-col justify-center items-center gap-8 relative z-10">
-              <Show when="signed-out">
+              <Unauthenticated>
                 <SignUpButton mode="modal">
                   <Button size="lg" className="text-lg px-10 py-7 h-auto rounded-full shadow-xl hover:shadow-primary/30 transition-all duration-300 hover:-translate-y-1">
                     Get Started Free
                   </Button>
                 </SignUpButton>
-              </Show>
+              </Unauthenticated>
               
               <div className="flex flex-wrap justify-center items-center gap-x-8 gap-y-4 text-sm font-medium text-muted-foreground">
                 <div className="flex items-center gap-2 bg-background/50 px-4 py-2 rounded-full backdrop-blur-sm border">

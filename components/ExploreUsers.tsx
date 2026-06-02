@@ -1,24 +1,19 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import UserSearch from "@/components/UserSearch";
 import { NewChatDialog } from "@/components/NewChatDialog";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { useUser } from "@clerk/nextjs";
+import { Doc } from "@/convex/_generated/dataModel";
 
 export default function ExploreUsers() {
   const { user } = useUser();
-  const [selectedUser, setSelectedUser] = useState<any>(null);
-  const [users, setUsers] = useState<any[]>([]);
+  const [selectedUser, setSelectedUser] = useState<Doc<"users"> | null>(null);
+  const [users, setUsers] = useState<Doc<"users">[]>([]);
 
-  // Placeholder: replace with actual Convex query to fetch all users
-  useEffect(() => {
-    // Mock fetch - in real implementation you'd call a Convex query
-    // Assuming a function fetchAllUsers exists that returns [{id, name, email, imageUrl}]
-    // For now, leave empty array to avoid breaking compile.
-    setUsers([]);
-  }, []);
+
 
   const sortedUsers = users.slice().sort((a, b) => a.name.localeCompare(b.name));
 
@@ -54,7 +49,7 @@ export default function ExploreUsers() {
         <ul className="space-y-2 mt-4">
           {sortedUsers.map((u) => (
             <li
-              key={u.id}
+              key={u._id}
               className="flex items-center p-2 rounded-lg hover:bg-muted/20 cursor-pointer"
               onClick={() => setSelectedUser(u)}
             >
