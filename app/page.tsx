@@ -2,6 +2,7 @@ import FeatureCard from "@/components/FeatureCard";
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Show, SignInButton, SignUpButton } from "@clerk/nextjs";
+import { PwaRedirect } from "@/components/PwaRedirect";
 import { MessageCircle, Users, Video, Shield, Zap, Mail } from "lucide-react";
 import Image from "next/image";
 import authImg from "./auth.png";
@@ -19,6 +20,7 @@ const GoogleIcon = () => (
 export default function Home() {
   return (
     <>
+      <PwaRedirect />
       {/* Mobile UI */}
       <div className="pwa-mobile-only relative min-h-[100dvh] w-full bg-[#FCF8F5] overflow-hidden flex-col items-center justify-between pb-12 pt-12">
         {/* Ambient background blobs */}
