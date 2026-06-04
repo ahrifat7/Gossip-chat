@@ -64,6 +64,22 @@ export const searchUsers = query({
   },
 });
 
+// List active users alphabetically for the mobile Explore directory
+export const listActiveUsers = query({
+  args: { limit: v.number() },
+  handler: async (ctx, { limit }) => {
+    const boundedLimit = Math.min(Math.max(Math.floor(limit), 1), 100);
+
+    const users = await ctx.db
+      .query("users")
+      .withIndex("by_name")
+      .order("asc")
+      .take(boundedLimit * 2);
+
+    return users.filter((user) => !user.isDeleted).slice(0, boundedLimit);
+  },
+});
+
 // Mark user as deleted
 export const markUserDeleted = mutation({
   args: { userId: v.string() },

@@ -11,5 +11,6 @@ export default defineSchema({
     isDeleted: v.optional(v.boolean()),
   })
     .index("by_userId", ["userId"])
-    .index("by_email", ["email"]),
+    .index("by_email", ["email"])
+    .index("by_name", ["name"]),
 });

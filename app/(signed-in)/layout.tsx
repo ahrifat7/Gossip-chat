@@ -15,8 +15,10 @@ import { CallProvider } from "@/components/call/CallProvider";
 import { IncomingCallOverlay } from "@/components/call/IncomingCallOverlay";
 import { OutgoingCallOverlay } from "@/components/call/OutgoingCallOverlay";
 import { ActiveCallOverlay } from "@/components/call/ActiveCallOverlay";
+import { MobileDashboardShell } from "@/components/mobile-dashboard";
 import streamClient from "@/lib/stream";
 import Link from "next/link";
+import { Suspense } from "react";
 import "stream-chat-react/dist/css/v2/index.css";
 
 function Layout({ children }: { children: React.ReactNode }) {
@@ -32,35 +34,41 @@ function Layout({ children }: { children: React.ReactNode }) {
               <OutgoingCallOverlay />
               <ActiveCallOverlay />
 
-              <SidebarProvider
-                style={
-                  {
-                    "--sidebar-width": "19rem",
-                  } as React.CSSProperties
-                }
-              >
-                <AppSidebar />
-                <SidebarInset className="flex flex-col overflow-hidden h-full">
-                  <header className="flex h-16 shrink-0 items-center gap-2 px-4">
-                    <SidebarTrigger className="-ml-1" />
+              <Suspense fallback={null}>
+                <MobileDashboardShell />
+              </Suspense>
 
-                    <Separator
-                      orientation="vertical"
-                      className="mr-2 data-[orientation=vertical]:h-4"
-                    />
+              <div className="hidden h-full w-full md:flex">
+                <SidebarProvider
+                  style={
+                    {
+                      "--sidebar-width": "19rem",
+                    } as React.CSSProperties
+                  }
+                >
+                  <AppSidebar />
+                  <SidebarInset className="flex h-full flex-col overflow-hidden">
+                    <header className="flex h-16 shrink-0 items-center gap-2 px-4">
+                      <SidebarTrigger className="-ml-1" />
 
-                    <Link
-                      href="/dashboard"
-                      className="text-2xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60"
-                    >
-                      Gossip
-                    </Link>
-                  </header>
-                  <div className="flex flex-1 flex-col p-4 pt-0 overflow-hidden">
-                    {children}
-                  </div>
-                </SidebarInset>
-              </SidebarProvider>
+                      <Separator
+                        orientation="vertical"
+                        className="mr-2 data-[orientation=vertical]:h-4"
+                      />
+
+                      <Link
+                        href="/dashboard"
+                        className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-2xl font-extrabold tracking-tight text-transparent"
+                      >
+                        Gossip
+                      </Link>
+                    </header>
+                    <div className="flex flex-1 flex-col overflow-hidden p-4 pt-0">
+                      {children}
+                    </div>
+                  </SidebarInset>
+                </SidebarProvider>
+              </div>
             </CallProvider>
           </StreamVideoWrapper>
         </Chat>
