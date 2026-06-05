@@ -10,16 +10,9 @@ import {
   VideoIcon,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import {
-  Channel,
-  ChannelHeader,
-  MessageInput,
-  MessageList,
-  Thread,
-  useChatContext,
-  Window,
-} from "stream-chat-react";
+import { Channel, ChannelHeader, MessageInput, MessageList, Thread, useChatContext, Window } from "stream-chat-react";
 import { useState } from "react";
+import { MobileGroupInfo } from "./MobileGroupInfo";
 
 type DashboardChatViewProps = {
   emptyState?: React.ReactNode;
@@ -37,6 +30,7 @@ export function DashboardChatView({
   const { channel, setActiveChannel } = useChatContext();
   const { startCall, callStatus } = useCallContext();
   const [isStartingCall, setIsStartingCall] = useState(false);
+  const [isGroupInfoOpen, setIsGroupInfoOpen] = useState(false);
 
   const handleCall = async () => {
     if (!channel || !user?.id) return;
@@ -119,7 +113,10 @@ export function DashboardChatView({
                 <ArrowLeftIcon className="h-5 w-5" />
               </Button>
             )}
-            <div className="min-w-0 flex-1">
+            <div 
+              className="min-w-0 flex-1 cursor-pointer md:cursor-default"
+              onClick={() => setIsGroupInfoOpen(true)}
+            >
               {channel.data?.member_count === 1 ? (
                 <ChannelHeader title="Everyone else has left this chat!" />
               ) : (
@@ -159,6 +156,9 @@ export function DashboardChatView({
         </div>
       </Window>
       <Thread additionalMessageInputProps={{ audioRecordingEnabled: true }} />
+      <div className="md:hidden">
+        <MobileGroupInfo open={isGroupInfoOpen} onOpenChange={setIsGroupInfoOpen} />
+      </div>
     </Channel>
   );
 }

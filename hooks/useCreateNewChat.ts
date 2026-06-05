@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useChatContext } from "stream-chat-react";
 
 export const useCreateNewChat = () => {
@@ -29,6 +30,8 @@ export const useCreateNewChat = () => {
       if (isGroupChat) {
         channelData.name =
           groupName || `Group chat (${members.length} members)`;
+        // Store admin privileges in custom channel data
+        (channelData as any).adminIds = [createdBy];
       }
 
       const channel = isGroupChat
