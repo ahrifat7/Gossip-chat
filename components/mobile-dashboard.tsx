@@ -20,12 +20,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { UserButton, useUser } from "@clerk/nextjs";
 import { useQuery } from "convex/react";
-import {
-  Globe2Icon,
-  MessageCircleIcon,
-  UsersIcon,
-  XIcon,
-} from "lucide-react";
+import { Globe2Icon, MessageCircleIcon, UsersIcon, XIcon } from "lucide-react";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Component, useEffect, useMemo, useState } from "react";
@@ -254,7 +249,10 @@ function MobileGroupSheet({
       const channel = await createNewChat({
         createdBy: user.id,
         groupName: groupName.trim() || undefined,
-        members: [user.id, ...selectedUsers.map((selectedUser) => selectedUser.userId)],
+        members: [
+          user.id,
+          ...selectedUsers.map((selectedUser) => selectedUser.userId),
+        ],
       });
 
       handleOpenChange(false);
@@ -266,10 +264,7 @@ function MobileGroupSheet({
 
   return (
     <Sheet open={open} onOpenChange={handleOpenChange}>
-      <SheetContent
-        className="w-full gap-0 p-0 sm:max-w-none"
-        side="right"
-      >
+      <SheetContent className="w-full gap-0 p-0 sm:max-w-none" side="right">
         <SheetHeader className="border-b px-4 py-4">
           <SheetTitle>Create Group Chat</SheetTitle>
           <SheetDescription>
@@ -304,9 +299,7 @@ function MobileGroupSheet({
               <h3 className="text-sm font-semibold text-foreground">
                 Selected Users ({selectedUsers.length})
               </h3>
-              <span className="text-xs text-muted-foreground">
-                Minimum 2
-              </span>
+              <span className="text-xs text-muted-foreground">Minimum 2</span>
             </div>
 
             {selectedUsers.length === 0 ? (
@@ -402,7 +395,9 @@ function MobileUserDirectory({
   const users = useQuery(api.users.listActiveUsers, { limit: 100 });
 
   const directoryUsers = useMemo(() => {
-    return (users || []).filter((directoryUser) => directoryUser.userId !== user?.id);
+    return (users || []).filter(
+      (directoryUser) => directoryUser.userId !== user?.id,
+    );
   }, [user?.id, users]);
 
   return (
@@ -428,10 +423,7 @@ function MobileUserDirectory({
         <div className="rounded-lg border bg-card px-3">
           {directoryUsers.map((directoryUser) => (
             <div className="relative" key={directoryUser._id}>
-              <UserDirectoryItem
-                onSelect={onSelectUser}
-                user={directoryUser}
-              />
+              <UserDirectoryItem onSelect={onSelectUser} user={directoryUser} />
               {activeUserId === directoryUser.userId && (
                 <div className="absolute inset-y-0 right-0 flex items-center bg-card pl-3">
                   <InlineSpinner size="sm" />
@@ -606,16 +598,13 @@ export function MobileDashboardShell() {
     <div className="relative flex h-[100dvh] w-full flex-col overflow-hidden bg-background md:hidden">
       {isChatView ? (
         <div className="h-full min-h-0 overflow-hidden">
-          <DashboardChatView
-            onBack={handleBackToChats}
-            showBackButton
-          />
+          <DashboardChatView onBack={handleBackToChats} showBackButton />
         </div>
       ) : (
         <>
           <header className="sticky top-0 z-40 flex h-16 shrink-0 items-center justify-between border-b bg-background/95 px-4 backdrop-blur">
             <div>
-              <h1 className="text-2xl font-extrabold tracking-tight text-foreground">
+              <h1 className="text-2xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60">
                 Gossip
               </h1>
             </div>
