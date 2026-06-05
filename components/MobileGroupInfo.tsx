@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { useChatContext, Avatar as StreamAvatar, useChannelStateContext } from "stream-chat-react";
-import { ArrowLeftIcon, PencilIcon, UserPlusIcon, LogOutIcon, MoreVerticalIcon, CrownIcon } from "lucide-react";
+import { ArrowLeftIcon, PencilIcon, UserPlusIcon, LogOutIcon, MoreVerticalIcon, CrownIcon, CameraIcon, CheckIcon, XIcon, Loader2Icon } from "lucide-react";
 import { useUser } from "@clerk/nextjs";
 import { AddGroupMembersSheet } from "./AddGroupMembersSheet";
 import { removeMemberFromGroup, updateGroupRole, leaveGroup, renameGroup } from "@/actions/groups";
@@ -25,9 +25,11 @@ export function MobileGroupInfo({
 
   const [isAddMembersOpen, setIsAddMembersOpen] = useState(false);
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
-  const [isRenameDialogOpen, setIsRenameDialogOpen] = useState(false);
+  const [isEditingName, setIsEditingName] = useState(false);
   const [newGroupName, setNewGroupName] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   if (!channel || !user?.id) return null;
 
@@ -45,19 +47,53 @@ export function MobileGroupInfo({
   // Actions
   const handleRenameGroup = async () => {
     if (!newGroupName.trim() || newGroupName === channelName) {
-      setIsRenameDialogOpen(false);
+      setIsEditingName(false);
       return;
     }
     
     setIsProcessing(true);
-    const result = await renameGroup(channel.id!, newGroupName.trim(), user.id);
-    setIsProcessing(false);
-    
-    if (result.success) {
-      setIsRenameDialogOpen(false);
-    } else {
-      alert("Failed to rename group: " + result.error);
+    try {
+      const response = await fetch(`/api/chats/${channel.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ groupName: newGroupName.trim() }),
+      });
+      if (!response.ok) throw new Error("Failed to rename group");
+      setIsEditingName(false);
+    } catch (error: any) {
+      alert(error.message || "Failed to rename group");
+    } finally {
+      setIsProcessing(false);
     }
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      const base64Image = event.target?.result as string;
+      setIsUploadingImage(true);
+      try {
+        const response = await fetch(`/api/chats/${channel.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ groupImage: base64Image }),
+        });
+        
+        if (!response.ok) {
+          const err = await response.json();
+          throw new Error(err.error || "Failed to upload image");
+        }
+      } catch (error: any) {
+        alert(error.message || "Failed to update image");
+      } finally {
+        setIsUploadingImage(false);
+        if (fileInputRef.current) fileInputRef.current.value = "";
+      }
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleLeaveGroup = async () => {
@@ -121,19 +157,58 @@ export function MobileGroupInfo({
             
             {/* Group Profile Info */}
             <div className="flex flex-col items-center justify-center py-8 px-4 border-b">
-              <div className="h-24 w-24 rounded-full bg-muted flex items-center justify-center overflow-hidden mb-4 shadow-sm border">
-                {(channel.data as any)?.image ? (
-                  <img src={(channel.data as any).image as string} alt={channelName} className="h-full w-full object-cover" />
+              <div className="relative h-24 w-24 rounded-full bg-muted flex items-center justify-center overflow-hidden mb-4 shadow-sm border">
+                {isUploadingImage ? (
+                  <Loader2Icon className="h-8 w-8 animate-spin text-muted-foreground" />
+                ) : channelData?.image ? (
+                  <img src={channelData.image as string} alt={channelName} className="h-full w-full object-cover" />
                 ) : (
                   <span className="text-4xl">👥</span>
                 )}
+
+                {isCurrentUserAdmin && !isUploadingImage && (
+                  <div 
+                    className="absolute bottom-0 left-0 right-0 bg-black/50 py-1 flex items-center justify-center cursor-pointer hover:bg-black/60 transition-colors"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    <CameraIcon className="h-4 w-4 text-white" />
+                  </div>
+                )}
               </div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-2xl font-bold text-center">{channelName}</h2>
-                {isCurrentUserAdmin && (
-                  <Button variant="ghost" size="icon-sm" onClick={() => { setNewGroupName(channelName); setIsRenameDialogOpen(true); }}>
-                    <PencilIcon className="h-4 w-4 text-muted-foreground" />
-                  </Button>
+              <input 
+                type="file" 
+                ref={fileInputRef} 
+                accept="image/*" 
+                className="hidden" 
+                onChange={handleImageUpload} 
+              />
+
+              <div className="flex items-center gap-2 mt-2 w-full justify-center">
+                {isEditingName ? (
+                  <div className="flex items-center gap-2 w-full max-w-[250px]">
+                    <Input 
+                      value={newGroupName} 
+                      onChange={(e) => setNewGroupName(e.target.value)} 
+                      className="h-9"
+                      autoFocus
+                      disabled={isProcessing}
+                    />
+                    <Button variant="ghost" size="icon-sm" className="text-green-600 hover:text-green-700 hover:bg-green-50 shrink-0" onClick={handleRenameGroup} disabled={isProcessing || !newGroupName.trim()}>
+                      {isProcessing ? <Loader2Icon className="h-4 w-4 animate-spin" /> : <CheckIcon className="h-4 w-4" />}
+                    </Button>
+                    <Button variant="ghost" size="icon-sm" className="text-muted-foreground shrink-0" onClick={() => setIsEditingName(false)} disabled={isProcessing}>
+                      <XIcon className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <>
+                    <h2 className="text-2xl font-bold text-center">{channelName}</h2>
+                    {isCurrentUserAdmin && (
+                      <Button variant="ghost" size="icon-sm" onClick={() => { setNewGroupName(channelName); setIsEditingName(true); }}>
+                        <PencilIcon className="h-4 w-4 text-muted-foreground" />
+                      </Button>
+                    )}
+                  </>
                 )}
               </div>
               <p className="text-sm text-muted-foreground mt-1">Group • {activeMembers.length} members</p>
@@ -226,30 +301,6 @@ export function MobileGroupInfo({
         channelId={channel.id!} 
         existingMemberIds={activeMembers.map(m => m.user_id!).filter(Boolean)}
       />
-
-      {/* Rename Group Dialog */}
-      <Dialog open={isRenameDialogOpen} onOpenChange={setIsRenameDialogOpen}>
-        <DialogContent className="sm:max-w-md mx-4">
-          <DialogHeader>
-            <DialogTitle>Rename Group</DialogTitle>
-            <DialogDescription>
-              Enter a new name for this group chat.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="py-4">
-            <Input 
-              value={newGroupName} 
-              onChange={(e) => setNewGroupName(e.target.value)} 
-              placeholder="Group name"
-              autoFocus
-            />
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsRenameDialogOpen(false)}>Cancel</Button>
-            <Button onClick={handleRenameGroup} disabled={isProcessing || !newGroupName.trim()}>Save</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
       {/* Member Action Bottom Sheet */}
       {selectedMember && (

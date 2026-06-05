@@ -3,7 +3,7 @@
 
 import { serverClient } from "@/lib/streamServer";
 
-async function verifyAdmin(channelId: string, requesterId: string) {
+export async function verifyAdmin(channelId: string, requesterId: string) {
   const channel = serverClient.channel("team", channelId);
   const state = await channel.watch();
   
