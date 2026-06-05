@@ -28,8 +28,8 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
-import type { ComponentProps } from "react";
+import { Component, useEffect, useMemo, useState } from "react";
+import type { ComponentProps, ReactNode } from "react";
 import type { Channel, ChannelSort } from "stream-chat";
 import { ChannelList, InfiniteScroll, useChatContext } from "stream-chat-react";
 
@@ -366,6 +366,85 @@ function MobileGroupSheet({
   );
 }
 
+class DirectoryErrorBoundary extends Component<
+  { children: ReactNode; fallback: ReactNode },
+  { hasError: boolean }
+> {
+  constructor(props: { children: ReactNode; fallback: ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: Error) {
+    console.error("Directory query failed:", error);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return this.props.fallback;
+    }
+    return this.props.children;
+  }
+}
+
+function MobileUserDirectory({
+  activeUserId,
+  onSelectUser,
+}: {
+  activeUserId: string | null;
+  onSelectUser: (user: Doc<"users">) => void;
+}) {
+  const { user } = useUser();
+  const users = useQuery(api.users.listActiveUsers, { limit: 100 });
+
+  const directoryUsers = useMemo(() => {
+    return (users || []).filter((directoryUser) => directoryUser.userId !== user?.id);
+  }, [user?.id, users]);
+
+  return (
+    <section className="mt-6">
+      <div className="mb-2 flex items-center justify-between">
+        <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          All Users
+        </h2>
+        {users === undefined && <InlineSpinner size="sm" />}
+      </div>
+
+      {users === undefined ? (
+        <div className="space-y-3">
+          <div className="h-14 rounded-lg bg-muted" />
+          <div className="h-14 rounded-lg bg-muted" />
+          <div className="h-14 rounded-lg bg-muted" />
+        </div>
+      ) : directoryUsers.length === 0 ? (
+        <div className="rounded-lg border border-dashed p-5 text-center text-sm text-muted-foreground">
+          No other users are available yet.
+        </div>
+      ) : (
+        <div className="rounded-lg border bg-card px-3">
+          {directoryUsers.map((directoryUser) => (
+            <div className="relative" key={directoryUser._id}>
+              <UserDirectoryItem
+                onSelect={onSelectUser}
+                user={directoryUser}
+              />
+              {activeUserId === directoryUser.userId && (
+                <div className="absolute inset-y-0 right-0 flex items-center bg-card pl-3">
+                  <InlineSpinner size="sm" />
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
 function MobileExploreTab({
   onOpenChat,
 }: {
@@ -373,13 +452,9 @@ function MobileExploreTab({
 }) {
   const { user } = useUser();
   const createNewChat = useCreateNewChat();
-  const users = useQuery(api.users.listActiveUsers, { limit: 100 });
   const [isGroupOpen, setIsGroupOpen] = useState(false);
   const [activeUserId, setActiveUserId] = useState<string | null>(null);
-
-  const directoryUsers = useMemo(() => {
-    return (users || []).filter((directoryUser) => directoryUser.userId !== user?.id);
-  }, [user?.id, users]);
+  const [retryKey, setRetryKey] = useState(0);
 
   const handleDirectChat = async (selectedUser: Doc<"users">) => {
     if (!user?.id) return;
@@ -416,42 +491,34 @@ function MobileExploreTab({
         Create Group Chat
       </Button>
 
-      <section className="mt-6">
-        <div className="mb-2 flex items-center justify-between">
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            All Users
-          </h2>
-          {users === undefined && <InlineSpinner size="sm" />}
-        </div>
-
-        {users === undefined ? (
-          <div className="space-y-3">
-            <div className="h-14 rounded-lg bg-muted" />
-            <div className="h-14 rounded-lg bg-muted" />
-            <div className="h-14 rounded-lg bg-muted" />
-          </div>
-        ) : directoryUsers.length === 0 ? (
-          <div className="rounded-lg border border-dashed p-5 text-center text-sm text-muted-foreground">
-            No other users are available yet.
-          </div>
-        ) : (
-          <div className="rounded-lg border bg-card px-3">
-            {directoryUsers.map((directoryUser) => (
-              <div className="relative" key={directoryUser._id}>
-                <UserDirectoryItem
-                  onSelect={handleDirectChat}
-                  user={directoryUser}
-                />
-                {activeUserId === directoryUser.userId && (
-                  <div className="absolute inset-y-0 right-0 flex items-center bg-card pl-3">
-                    <InlineSpinner size="sm" />
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
-      </section>
+      <DirectoryErrorBoundary
+        key={retryKey}
+        fallback={
+          <section className="mt-6">
+            <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              All Users
+            </h2>
+            <div className="flex flex-col items-center justify-center rounded-lg border border-dashed p-5 text-center">
+              <p className="text-sm text-muted-foreground">
+                User directory is temporarily unavailable. Search still works.
+              </p>
+              <Button
+                className="mt-3 h-8 text-xs"
+                onClick={() => setRetryKey((k) => k + 1)}
+                size="sm"
+                variant="outline"
+              >
+                Retry
+              </Button>
+            </div>
+          </section>
+        }
+      >
+        <MobileUserDirectory
+          activeUserId={activeUserId}
+          onSelectUser={handleDirectChat}
+        />
+      </DirectoryErrorBoundary>
 
       <MobileGroupSheet
         onOpenChange={setIsGroupOpen}
