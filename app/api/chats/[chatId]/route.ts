@@ -2,6 +2,12 @@ import { auth } from "@clerk/nextjs/server";
 import { verifyAdmin } from "@/actions/groups";
 import { v2 as cloudinary } from "cloudinary";
 
+if (process.env.CLOUDINARY_URL) {
+  cloudinary.config({
+    cloudinary_url: process.env.CLOUDINARY_URL,
+  });
+}
+
 export async function PATCH(
   request: Request,
   context: { params: Promise<{ chatId: string }> }
@@ -45,9 +51,9 @@ export async function PATCH(
           folder: "gossip_groups",
         });
         updates.image = uploadResponse.secure_url;
-      } catch (uploadError) {
+      } catch (uploadError: any) {
         console.error("Cloudinary upload error:", uploadError);
-        return new Response(JSON.stringify({ error: "Failed to upload image" }), { status: 500 });
+        return new Response(JSON.stringify({ error: `Cloudinary error: ${uploadError?.message || uploadError}` }), { status: 500 });
       }
     }
 

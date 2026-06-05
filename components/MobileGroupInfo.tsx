@@ -71,6 +71,12 @@ export function MobileGroupInfo({
     const file = e.target.files?.[0];
     if (!file) return;
 
+    if (file.size > 4 * 1024 * 1024) {
+      alert("Image is too large. Please select an image under 4MB.");
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      return;
+    }
+
     const reader = new FileReader();
     reader.onload = async (event) => {
       const base64Image = event.target?.result as string;
