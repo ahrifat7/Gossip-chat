@@ -4,7 +4,7 @@ import { v2 as cloudinary } from "cloudinary";
 
 export async function PATCH(
   request: Request,
-  context: { params: Promise<{ chatId: string }> | { chatId: string } }
+  context: { params: Promise<{ chatId: string }> }
 ) {
   try {
     const { userId } = await auth();
@@ -13,8 +13,7 @@ export async function PATCH(
     }
 
     // Resolve params properly across Next.js versions
-    const resolvedParams = await Promise.resolve(context.params);
-    const chatId = resolvedParams.chatId;
+    const { chatId } = await context.params;
 
     if (!chatId) {
       return new Response(JSON.stringify({ error: "Missing chat ID" }), { status: 400 });
