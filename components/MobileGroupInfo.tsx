@@ -31,9 +31,16 @@ export function MobileGroupInfo({
 
   if (!channel || !user?.id) return null;
 
-  const adminIds = ((channel.data as any)?.adminIds as string[]) || [];
+  const channelData = channel.data as any;
+  let adminIds = (channelData?.adminIds as string[]) || [];
+  const createdById = channelData?.created_by_id || channelData?.created_by?.id;
+  
+  if (adminIds.length === 0 && createdById) {
+    adminIds = [createdById];
+  }
+  
   const isCurrentUserAdmin = adminIds.includes(user.id);
-  const channelName = (channel.data as any)?.name || "Group Chat";
+  const channelName = channelData?.name || "Group Chat";
 
   // Actions
   const handleRenameGroup = async () => {

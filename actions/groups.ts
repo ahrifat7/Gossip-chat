@@ -7,13 +7,19 @@ async function verifyAdmin(channelId: string, requesterId: string) {
   const channel = serverClient.channel("team", channelId);
   const state = await channel.watch();
   
-  const adminIds = ((state.channel as any).adminIds as string[]) || [];
+  let adminIds = ((state.channel as any).adminIds as string[]) || [];
+  const createdById = (state.channel as any).created_by_id || (state.channel as any).created_by?.id;
   
-  if (!adminIds.includes(requesterId)) {
+  // Fallback: If adminIds is empty, the creator is inherently an admin
+  if (adminIds.length === 0 && createdById) {
+    adminIds = [createdById];
+  }
+  
+  if (!adminIds.includes(requesterId) && requesterId !== createdById) {
     throw new Error("Unauthorized: Only admins can perform this action");
   }
   
-  return { channel, adminIds, state };
+  return { channel, adminIds, state, createdById };
 }
 
 export async function addMembersToGroup(channelId: string, userIdsToAdd: string[], requesterId: string) {
@@ -87,6 +93,11 @@ export async function leaveGroup(channelId: string, userId: string) {
     const state = await channel.watch();
     const members = Object.keys(state.members);
     let adminIds = ((state.channel as any).adminIds as string[]) || [];
+    const createdById = (state.channel as any).created_by_id || (state.channel as any).created_by?.id;
+    
+    if (adminIds.length === 0 && createdById) {
+      adminIds = [createdById];
+    }
 
     // If last person leaving, delete group
     if (members.length <= 1) {
