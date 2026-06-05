@@ -164,3 +164,16 @@
     }
   }
 }
+/* Fix mobile chat header text truncation */
+.str-chat__header-livestream {
+  min-width: 0 !important;
+}
+.str-chat__header-livestream-left {
+  min-width: 0 !important;
+}
+.str-chat__header-livestream-left--title,
+.str-chat__header-livestream-left--subtitle {
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}

@@ -75,7 +75,7 @@ function MobileChannelPreview({
 
   return (
     <button
-      className="flex w-full items-center gap-3 border-b border-border/70 px-4 py-3 text-left transition-colors last:border-b-0 hover:bg-accent/70 focus:bg-accent/70 focus:outline-none"
+      className="flex w-full items-center gap-3 border-b border-border/70 px-4 py-3 text-left transition-colors last:border-b-0 active:bg-accent/70"
       onClick={onSelect}
       type="button"
     >

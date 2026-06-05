@@ -119,11 +119,13 @@ export function DashboardChatView({
                 <ArrowLeftIcon className="h-5 w-5" />
               </Button>
             )}
-            {channel.data?.member_count === 1 ? (
-              <ChannelHeader title="Everyone else has left this chat!" />
-            ) : (
-              <ChannelHeader />
-            )}
+            <div className="min-w-0 flex-1">
+              {channel.data?.member_count === 1 ? (
+                <ChannelHeader title="Everyone else has left this chat!" />
+              ) : (
+                <ChannelHeader />
+              )}
+            </div>
           </div>
           <div className="flex shrink-0 items-center gap-2">
             <Button
