@@ -8,10 +8,12 @@ export const useCreateNewChat = () => {
     members,
     createdBy,
     groupName,
+    groupImage,
   }: {
     members: string[];
     createdBy: string;
     groupName?: string; // Optional group name for group chats
+    groupImage?: string; // Optional group image for group chats
   }) => {
     const isGroupChat = members.length > 2; // More than 2 people = group chat
 
@@ -21,6 +23,7 @@ export const useCreateNewChat = () => {
         members: string[];
         created_by_id: string;
         name?: string;
+        image?: string;
       } = {
         members,
         created_by_id: createdBy,
@@ -30,6 +33,9 @@ export const useCreateNewChat = () => {
       if (isGroupChat) {
         channelData.name =
           groupName || `Group chat (${members.length} members)`;
+        if (groupImage) {
+          channelData.image = groupImage;
+        }
         // Store admin privileges in custom channel data
         (channelData as any).adminIds = [createdBy];
       }

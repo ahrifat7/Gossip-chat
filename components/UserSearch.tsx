@@ -11,6 +11,11 @@ import { InlineSpinner } from "./LoadingSpinner";
 import Image from "next/image";
 import { Mail } from "lucide-react";
 
+import { api } from "@/convex/_generated/api";
+import { useQuery, useMutation } from "convex/react";
+import { UserPlusIcon, ClockIcon, CheckIcon, MessageCircleIcon } from "lucide-react";
+import { Button } from "./ui/button";
+
 function UserSearch({
   onSelectUser,
   placeholder = "Search users by name or email...",
@@ -30,8 +35,19 @@ function UserSearch({
     (searchUser) => searchUser.userId !== user?.id,
   );
 
-  const handleSelectUser = (user: (typeof searchResults)[0]) => {
-    onSelectUser?.(user);
+  const resultUserIds = filteredResults.map(u => u.userId);
+  const connectionStatuses = useQuery(
+    api.friends.getConnectionStatuses,
+    user?.id && resultUserIds.length > 0
+      ? { currentUserId: user.id, otherUserIds: resultUserIds }
+      : "skip"
+  );
+
+  const sendRequest = useMutation(api.friends.sendRequest);
+  const acceptRequest = useMutation(api.friends.acceptRequest);
+
+  const handleSelectUser = (searchUser: (typeof searchResults)[0]) => {
+    onSelectUser?.(searchUser);
     setSearchTerm(""); // Clear search after selection
   };
 
@@ -63,7 +79,7 @@ function UserSearch({
 
       {/* Search Results */}
       {searchTerm.trim() && (
-        <div className="mt-2 bg-card border border-border rounded-lg shadow-lg max-h-96 overflow-y-auto">
+        <div className="mt-2 bg-card border border-border rounded-lg shadow-lg max-h-96 overflow-y-auto z-50 relative">
           {isLoading ? (
             <div className="p-4 text-center text-muted-foreground">
               <div className="flex items-center justify-center space-x-2">
@@ -78,51 +94,99 @@ function UserSearch({
             </div>
           ) : (
             <div className="py-2">
-              {filteredResults.map((user) => (
-                <button
-                  key={user._id}
-                  onClick={() => handleSelectUser(user)}
-                  className={cn(
-                    "w-full px-4 py-3 text-left hover:bg-accent transition-colors",
-                    "border-b border-border last:border-b-0",
-                    "focus:outline-none focus:bg-accent",
-                  )}
-                >
-                  <div className="flex items-center space-x-3">
-                    {/* User Avatar */}
-                    <div className="relative">
-                      <Image
-                        src={user.imageUrl}
-                        alt={user.name}
-                        width={40}
-                        height={40}
-                        className="h-10 w-10 rounded-full object-cover ring-2 ring-border"
-                      />
-                    </div>
+              {filteredResults.map((searchUser) => {
+                const statusObj = connectionStatuses?.[searchUser.userId] || { status: "none" };
+                const isFriends = statusObj.status === "friends";
 
-                    {/* User Info */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center space-x-2">
-                        <p className="font-medium text-foreground truncate">
-                          {user.name}
-                        </p>
+                return (
+                  <div
+                    key={searchUser._id}
+                    className={cn(
+                      "w-full px-4 py-3 flex items-center justify-between hover:bg-accent transition-colors",
+                      "border-b border-border last:border-b-0",
+                      isFriends ? "cursor-pointer" : "cursor-default"
+                    )}
+                    onClick={() => isFriends ? handleSelectUser(searchUser) : undefined}
+                  >
+                    <div className="flex items-center space-x-3 min-w-0 flex-1">
+                      {/* User Avatar */}
+                      <div className="relative shrink-0">
+                        <Image
+                          src={searchUser.imageUrl}
+                          alt={searchUser.name}
+                          width={40}
+                          height={40}
+                          className="h-10 w-10 rounded-full object-cover ring-2 ring-border"
+                        />
                       </div>
 
-                      <div className="flex items-center space-x-1 mt-1">
-                        <Mail className="h-3 w-3 text-muted-foreground" />
-                        <p className="text-sm text-muted-foreground truncate">
-                          {user.email}
-                        </p>
+                      {/* User Info */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center space-x-2">
+                          <p className="font-medium text-foreground truncate">
+                            {searchUser.name}
+                          </p>
+                        </div>
+
+                        <div className="flex items-center space-x-1 mt-1">
+                          <Mail className="h-3 w-3 text-muted-foreground shrink-0" />
+                          <p className="text-sm text-muted-foreground truncate">
+                            {searchUser.email}
+                          </p>
+                        </div>
                       </div>
                     </div>
 
-                    {/* Selection Indicator */}
-                    <div className="flex-shrink-0">
-                      <div className="h-2 w-2 rounded-full bg-primary opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    {/* Actions */}
+                    <div className="flex shrink-0 items-center justify-end pl-3">
+                      {statusObj.status === "none" && (
+                        <Button
+                          size="icon-sm"
+                          variant="ghost"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            user?.id && sendRequest({ senderId: user.id, receiverId: searchUser.userId });
+                          }}
+                          className="h-8 w-8 rounded-full bg-accent text-accent-foreground hover:bg-primary hover:text-primary-foreground"
+                        >
+                          <UserPlusIcon className="h-4 w-4" />
+                        </Button>
+                      )}
+                      {statusObj.status === "pending_sent" && (
+                        <div className="flex h-8 items-center gap-1 rounded-full bg-muted px-3 text-[10px] font-medium text-muted-foreground">
+                          <ClockIcon className="h-3 w-3" />
+                          <span>Pending</span>
+                        </div>
+                      )}
+                      {statusObj.status === "pending_received" && statusObj.requestId && (
+                        <Button
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            acceptRequest({ requestId: statusObj.requestId as any });
+                          }}
+                          className="h-8 rounded-full bg-primary text-xs"
+                        >
+                          Accept
+                        </Button>
+                      )}
+                      {statusObj.status === "friends" && (
+                        <Button
+                          size="icon-sm"
+                          variant="ghost"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleSelectUser(searchUser);
+                          }}
+                          className="h-8 w-8 rounded-full text-muted-foreground hover:bg-accent hover:text-foreground"
+                        >
+                          <MessageCircleIcon className="h-4 w-4" />
+                        </Button>
+                      )}
                     </div>
                   </div>
-                </button>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
