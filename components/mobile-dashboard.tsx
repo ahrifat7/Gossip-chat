@@ -755,15 +755,18 @@ function FriendRequestsSheet({
           ) : requests.length === 0 ? (
             <p className="text-center text-sm text-muted-foreground">No pending requests.</p>
           ) : (
-            requests.map((req) => (
-              <div key={req._id} className="flex items-center gap-3 rounded-lg border p-3">
-                <Image
-                  src={req.sender.imageUrl}
-                  alt={req.sender.name}
-                  width={40}
-                  height={40}
-                  className="rounded-full h-10 w-10 object-cover"
-                />
+            requests.map((req) => {
+              if (!req.sender) return null;
+              
+              return (
+                <div key={req._id} className="flex items-center gap-3 rounded-lg border p-3">
+                  <Image
+                    src={req.sender.imageUrl}
+                    alt={req.sender.name}
+                    width={40}
+                    height={40}
+                    className="rounded-full h-10 w-10 object-cover"
+                  />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium truncate">{req.sender.name}</p>
                   <p className="text-xs text-muted-foreground truncate">{req.sender.email}</p>
@@ -786,7 +789,8 @@ function FriendRequestsSheet({
                   </Button>
                 </div>
               </div>
-            ))
+            );
+          })
           )}
         </div>
       </SheetContent>
